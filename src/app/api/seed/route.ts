@@ -252,7 +252,7 @@ export async function GET() {
   } catch (error) {
     console.error("Seed error:", error);
     return NextResponse.json(
-      { success: false, message: "Error seeding database" },
+      { success: false, message: "Error seeding database", error: (error as Error).message },
       { status: 500 }
     );
   }
