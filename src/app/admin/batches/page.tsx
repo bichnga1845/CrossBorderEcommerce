@@ -91,7 +91,7 @@ export default function BatchesPage() {
               ) : batches.map((batch) => (
                 <tr key={batch._id} className="border-b border-gray-100 hover:bg-gray-50 transition cursor-pointer" onClick={() => setSelectedBatch(batch)}>
                   <td className="p-4 font-medium text-forest-900">{batch.batchId}</td>
-                  <td className="p-4 text-gray-700 text-sm">{batch.productId?.name || 'Unknown Product'}</td>
+                  <td className="p-4 text-gray-700 text-sm">{(batch.productId as any)?.name || 'Unknown Product'}</td>
                   <td className="p-4">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(batch.status)}`}>
                       {batch.status}
@@ -118,14 +118,14 @@ export default function BatchesPage() {
               {(selectedBatch.status === 'Approved' || selectedBatch.status === 'Published') ? (
                 <>
                   <QRCodeDisplay 
-                    url={`${globalThis.window ? window.location.origin : ''}/verification/${selectedBatch.productId?._id}/${selectedBatch.batchId}`} 
+                    url={`${globalThis.window ? window.location.origin : ''}/verification/${(selectedBatch.productId as any)?._id || selectedBatch.productId}/${selectedBatch.batchId}`} 
                   />
                   <div className="w-full mt-8 space-y-3">
                     <button className="w-full bg-forest-900 text-white py-2 rounded-lg font-medium hover:bg-forest-800 transition">
                       Download QR Code
                     </button>
                     <Link 
-                      href={`/verification/${selectedBatch.productId?._id}/${selectedBatch.batchId}`} 
+                      href={`/verification/${(selectedBatch.productId as any)?._id || selectedBatch.productId}/${selectedBatch.batchId}`} 
                       target="_blank"
                       className="w-full block border border-gray-200 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-50 transition"
                     >
