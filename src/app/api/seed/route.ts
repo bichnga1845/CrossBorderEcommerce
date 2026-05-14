@@ -144,7 +144,7 @@ const seedProducts = [
   }
 ];
 
-export async function POST() {
+export async function GET() {
   try {
     await dbConnect();
     await ProductCategory.deleteMany({});
