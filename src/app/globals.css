@@ -1,26 +1,114 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-forest-900: #1a2f23;
+  --color-forest-800: #21382b;
+  --color-forest-700: #2D4739;
+  --color-forest-600: #3a5c4a;
+  --color-forest-500: #48705b;
+  
+  --color-ivory: #ffffff;
+  --color-ivory-100: #F8F5F0;
+  
+  --color-champagne: #e8d0a9;
+  --color-champagne-dark: #D4B483;
+  
+  --color-beige: #f0e9df;
+  --color-beige-100: #E8DFD2;
+
+  --color-walnut-900: #4a3627;
+  --color-walnut-800: #594231;
+  --color-walnut-700: #6B4F3A;
+
+  --color-charcoal-900: #121212;
+  --color-charcoal-800: #1E1E1E;
+  
+  --color-background: var(--color-ivory-100);
+  --color-foreground: var(--color-charcoal-800);
+  
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-playfair), ui-serif, Georgia, serif;
+  --font-cormorant: var(--font-cormorant), ui-serif, Georgia, serif;
+
+  --animate-fade-in-up: fade-in-up 1s ease-out forwards;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-reveal: reveal 1.2s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+
+  --shadow-luxury: 0 20px 40px -15px rgba(26, 47, 35, 0.08), 0 10px 20px -10px rgba(26, 47, 35, 0.04);
+  --shadow-luxury-hover: 0 30px 60px -15px rgba(26, 47, 35, 0.15), 0 15px 30px -10px rgba(26, 47, 35, 0.08);
+  --shadow-glow: 0 0 30px rgba(212, 180, 131, 0.25);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes reveal {
+  0% { 
+    opacity: 0; 
+    transform: translateY(40px) scale(0.98); 
+    filter: blur(8px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+    filter: blur(0); 
+  }
+}
+
+.animation-delay-100 { animation-delay: 100ms; }
+.animation-delay-200 { animation-delay: 200ms; }
+.animation-delay-300 { animation-delay: 300ms; }
+.animation-delay-500 { animation-delay: 500ms; }
+.animation-delay-700 { animation-delay: 700ms; }
+
+:root {
+  --background: #fcfcf4;
+  --foreground: #0a331c;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0a331c;
+    --foreground: #fcfcf4;
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tùy chỉnh thanh cuộn mang phong cách Luxury */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-ivory-100); 
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-forest-900); 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-champagne-dark); 
 }
