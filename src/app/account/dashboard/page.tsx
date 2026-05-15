@@ -1,16 +1,18 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Award, Package, Clock, ShieldCheck, ChevronRight, Droplets, Gift, Edit3, X, Save, MapPin, Phone, Mail, User as UserIcon, ArrowRight } from "lucide-react";
+import { Award, Package, Clock, ShieldCheck, ChevronRight, Droplets, Gift, Edit3, X, Save, MapPin, Phone, Mail, User as UserIcon, ArrowRight, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useCartStore } from "@/store/useCartStore";
 
 export default function CustomerDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { clearCart } = useCartStore();
   const [mounted, setMounted] = useState(false);
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -77,6 +79,8 @@ export default function CustomerDashboard() {
     }
   };
 
+
+
   if (!mounted || status === "loading" || loading) {
     return (
       <div className="min-h-screen bg-[#fcfaf7] flex flex-col items-center justify-center">
@@ -95,7 +99,8 @@ export default function CustomerDashboard() {
   const tierStyles = {
     silver: "from-slate-400 to-slate-600 shadow-slate-200",
     gold: "from-amber-400 via-amber-500 to-amber-700 shadow-amber-200",
-    platinum: "from-zinc-600 via-zinc-800 to-black shadow-zinc-400"
+    platinum: "from-zinc-600 via-zinc-800 to-black shadow-zinc-400",
+    elite: "from-indigo-900 via-purple-900 to-black shadow-indigo-500"
   };
 
   return (
@@ -124,19 +129,36 @@ export default function CustomerDashboard() {
               Chào mừng, <span className="text-forest-800 italic">{userData?.name?.split(' ').pop()}</span>
             </motion.h1>
           </div>
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white/60 backdrop-blur-md px-6 py-4 rounded-2xl border border-forest-900/5 shadow-sm flex items-center gap-4"
-          >
-            <div className="w-12 h-12 bg-forest-900 text-ivory-100 rounded-full flex items-center justify-center font-bold">
-              {userData?.purchaseStreaks || 0}
-            </div>
-            <div>
-              <p className="text-[10px] uppercase font-bold text-forest-900/40 tracking-widest">Chuỗi mua hàng</p>
-              <p className="text-sm font-bold text-forest-900">Liên tục {userData?.purchaseStreaks || 0} lần</p>
-            </div>
-          </motion.div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white/60 backdrop-blur-md px-6 py-4 rounded-2xl border border-forest-900/5 shadow-sm flex items-center gap-4"
+            >
+              <div className="w-12 h-12 bg-forest-900 text-ivory-100 rounded-full flex items-center justify-center font-bold">
+                {userData?.purchaseStreaks || 0}
+              </div>
+              <div>
+                <p className="text-[10px] uppercase font-bold text-forest-900/40 tracking-widest">Chuỗi mua hàng</p>
+                <p className="text-sm font-bold text-forest-900">Liên tục {userData?.purchaseStreaks || 0} lần</p>
+              </div>
+            </motion.div>
+
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                clearCart();
+                signOut({ callbackUrl: '/' });
+              }}
+              className="bg-red-50 text-red-600 px-6 py-4 rounded-2xl border border-red-100 shadow-sm flex items-center gap-3 font-bold text-xs uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all duration-300"
+            >
+              <LogOut size={18} />
+              Đăng xuất
+            </motion.button>
+          </div>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -255,25 +277,9 @@ export default function CustomerDashboard() {
               ))}
             </div>
 
-            {/* Smart Refill Card */}
-            <div className="bg-forest-900 text-ivory-100 rounded-[2.5rem] p-10 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-1000" />
-              
-              <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
-                <div className="w-24 h-24 bg-white/10 rounded-[2rem] flex items-center justify-center backdrop-blur-md border border-white/10">
-                  <Clock size={40} className="text-champagne-dark" />
-                </div>
-                <div className="flex-1 text-center md:text-left">
-                  <h3 className="font-serif text-2xl mb-2">Nhắc nhở nạp lại (Refill)</h3>
-                  <p className="text-white/60 text-sm leading-relaxed max-w-md">
-                    Hệ thống AI đang theo dõi chu kỳ sử dụng của bạn. Khi sản phẩm sắp hết, chúng tôi sẽ thông báo tại đây.
-                  </p>
-                </div>
-                <button className="px-8 py-4 bg-champagne-dark text-forest-900 font-bold text-xs uppercase tracking-widest rounded-full hover:bg-white transition-all shadow-xl shadow-black/20">
-                  Thiết lập chu kỳ
-                </button>
-              </div>
-            </div>
+
+
+
 
             {/* AI Recommendation Preview */}
             <div className="relative rounded-[2.5rem] overflow-hidden group h-[300px]">
@@ -315,78 +321,84 @@ export default function CustomerDashboard() {
           >
             <div className="absolute inset-0 bg-forest-900/60 backdrop-blur-md" onClick={() => setIsEditModalOpen(false)} />
             <motion.div 
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="relative w-full max-w-xl bg-white rounded-[3rem] p-10 shadow-2xl overflow-hidden"
+              initial={{ scale: 0.95, y: 30, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 30, opacity: 0 }}
+              className="relative w-full max-w-2xl bg-white/95 backdrop-blur-2xl rounded-[3.5rem] p-8 md:p-12 shadow-[0_32px_64px_-16px_rgba(15,45,36,0.2)] overflow-hidden border border-white"
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-forest-900/5 rounded-full blur-3xl" />
               
-              <div className="flex justify-between items-center mb-10 relative z-10">
-                <h3 className="font-serif text-3xl text-forest-900 font-bold">Cập Nhật Thông Tin</h3>
-                <button onClick={() => setIsEditModalOpen(false)} className="p-2 hover:bg-ivory-100 rounded-full transition-colors">
+              <div className="flex justify-between items-center mb-12 relative z-10">
+                <div>
+                  <h3 className="font-serif text-4xl text-forest-900 font-bold mb-2">Thông Tin Cá Nhân</h3>
+                  <p className="text-forest-900/40 text-xs uppercase tracking-[0.2em] font-bold">Cập nhật không gian riêng của bạn</p>
+                </div>
+                <button onClick={() => setIsEditModalOpen(false)} className="w-12 h-12 flex items-center justify-center bg-ivory-50 text-forest-900/30 hover:bg-forest-900 hover:text-white rounded-full transition-all duration-500">
                   <X size={20} />
                 </button>
               </div>
 
               <form onSubmit={handleSaveProfile} className="space-y-6 relative z-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-forest-900/40">Họ và Tên</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-forest-900/30 ml-2">Danh xưng / Họ tên</label>
                     <input 
                       type="text" 
                       value={editForm.name}
                       onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                      className="w-full bg-ivory-50 border-none rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-forest-900 transition-all font-medium"
+                      placeholder="Nguyễn Văn A"
+                      className="w-full bg-ivory-50/50 border border-forest-900/5 rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-forest-900/10 focus:bg-white transition-all font-medium text-forest-900 placeholder:text-forest-900/20"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-forest-900/40">Số Điện Thoại</label>
+                  <div className="space-y-3">
+                    <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-forest-900/30 ml-2">Số điện thoại liên lạc</label>
                     <input 
                       type="text" 
                       value={editForm.phone}
                       onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
-                      className="w-full bg-ivory-50 border-none rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-forest-900 transition-all font-medium"
+                      placeholder="09xx xxx xxx"
+                      className="w-full bg-ivory-50/50 border border-forest-900/5 rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-forest-900/10 focus:bg-white transition-all font-medium text-forest-900 placeholder:text-forest-900/20"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest font-bold text-forest-900/40">Địa Chỉ (Số nhà, Tên đường)</label>
+                <div className="space-y-3">
+                  <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-forest-900/30 ml-2">Địa chỉ giao hàng (Số nhà, Tên đường)</label>
                   <input 
                     type="text" 
                     value={editForm.address}
                     onChange={(e) => setEditForm({...editForm, address: e.target.value})}
-                    className="w-full bg-ivory-50 border-none rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-forest-900 transition-all font-medium"
+                    placeholder="123 Nguyễn Huệ"
+                    className="w-full bg-ivory-50/50 border border-forest-900/5 rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-forest-900/10 focus:bg-white transition-all font-medium text-forest-900"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-forest-900/40">Thành phố</label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-3">
+                    <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-forest-900/30 ml-2">Thành phố / Tỉnh</label>
                     <input 
                       type="text" 
                       value={editForm.city}
                       onChange={(e) => setEditForm({...editForm, city: e.target.value})}
-                      className="w-full bg-ivory-50 border-none rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-forest-900 transition-all font-medium"
+                      className="w-full bg-ivory-50/50 border border-forest-900/5 rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-forest-900/10 focus:bg-white transition-all font-medium text-forest-900"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-forest-900/40">Quận/Huyện</label>
+                  <div className="space-y-3">
+                    <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-forest-900/30 ml-2">Quận / Huyện</label>
                     <input 
                       type="text" 
                       value={editForm.district}
                       onChange={(e) => setEditForm({...editForm, district: e.target.value})}
-                      className="w-full bg-ivory-50 border-none rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-forest-900 transition-all font-medium"
+                      className="w-full bg-ivory-50/50 border border-forest-900/5 rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-forest-900/10 focus:bg-white transition-all font-medium text-forest-900"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-forest-900/40">Phường/Xã</label>
+                  <div className="space-y-3">
+                    <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-forest-900/30 ml-2">Phường / Xã</label>
                     <input 
                       type="text" 
                       value={editForm.ward}
                       onChange={(e) => setEditForm({...editForm, ward: e.target.value})}
-                      className="w-full bg-ivory-50 border-none rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-forest-900 transition-all font-medium"
+                      className="w-full bg-ivory-50/50 border border-forest-900/5 rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-forest-900/10 focus:bg-white transition-all font-medium text-forest-900"
                     />
                   </div>
                 </div>

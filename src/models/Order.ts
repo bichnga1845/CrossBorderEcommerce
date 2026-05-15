@@ -29,6 +29,7 @@ export interface IOrder extends Document {
   paymentMethod: string;
   totalAmount: number;
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  pointsEarned: number;
 }
 
 const OrderSchema: Schema = new Schema({
@@ -59,7 +60,8 @@ const OrderSchema: Schema = new Schema({
     type: String, 
     enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
     default: 'pending'
-  }
+  },
+  pointsEarned: { type: Number, default: 0 }
 }, { timestamps: true });
 
 const Order: Model<IOrder> = mongoose.models.Order || mongoose.model<IOrder>('Order', OrderSchema);

@@ -24,6 +24,7 @@ export interface IProduct extends Document {
   productionProcess?: string;
   certifications: string[];
   batchIds: mongoose.Types.ObjectId[];
+  stock: number;
 }
 
 const ProductSchema: Schema = new Schema({
@@ -49,7 +50,8 @@ const ProductSchema: Schema = new Schema({
   originStory: { type: String },
   productionProcess: { type: String },
   certifications: [{ type: String }],
-  batchIds: [{ type: Schema.Types.ObjectId, ref: 'Batch' }]
+  batchIds: [{ type: Schema.Types.ObjectId, ref: 'Batch' }],
+  stock: { type: Number, default: 0 }
 }, { timestamps: true });
 
 // Prevent mongoose from compiling the model multiple times in development

@@ -4,6 +4,7 @@ export interface INewsletter extends Document {
   email: string;
   status: 'active' | 'unsubscribed';
   subscribedAt: Date;
+  agentProcessed: boolean;
 }
 
 const NewsletterSchema: Schema = new Schema({
@@ -22,7 +23,8 @@ const NewsletterSchema: Schema = new Schema({
   subscribedAt: { 
     type: Date, 
     default: Date.now 
-  }
+  },
+  agentProcessed: { type: Boolean, default: false }
 }, { timestamps: true });
 
 const Newsletter: Model<INewsletter> = mongoose.models.Newsletter || mongoose.model<INewsletter>('Newsletter', NewsletterSchema);

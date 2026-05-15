@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import CartDrawer from "@/components/cart/CartDrawer";
+import CartSync from "@/components/CartSync";
 import { Providers } from "@/components/Providers";
 
 const inter = Inter({
@@ -42,6 +43,7 @@ export default function RootLayout({
         <Providers>
           <Navbar />
           <CartDrawer />
+          <CartSync />
           <main className="flex-grow">{children}</main>
           <Footer />
         </Providers>

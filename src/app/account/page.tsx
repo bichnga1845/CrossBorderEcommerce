@@ -5,6 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Package, User, LogOut, Settings } from "lucide-react";
+import { useCartStore } from "@/store/useCartStore";
 
 interface Order {
   _id: string;
@@ -17,6 +18,7 @@ interface Order {
 export default function AccountPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { clearCart } = useCartStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("orders");
@@ -112,7 +114,10 @@ export default function AccountPage() {
                   <User size={18} /> Thông Tin Tài Khoản
                 </button>
                 <button 
-                  onClick={() => signOut({ callbackUrl: '/' })}
+                  onClick={() => {
+                    clearCart();
+                    signOut({ callbackUrl: '/' });
+                  }}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors mt-8"
                 >
                   <LogOut size={18} /> Đăng Xuất

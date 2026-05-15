@@ -13,11 +13,12 @@ export interface IUser extends Document {
   district?: string;
   ward?: string;
   authProvider: 'credentials' | 'google';
-  membershipTier: 'silver' | 'gold' | 'platinum';
+  membershipTier: 'silver' | 'gold' | 'platinum' | 'elite';
   rewardPoints: number;
   refillReminders: boolean;
   purchaseStreaks: number;
   wishlist: string[];
+  welcomeEmailSent?: boolean;
 }
 
 const UserSchema: Schema = new Schema({
@@ -33,11 +34,12 @@ const UserSchema: Schema = new Schema({
   district: { type: String },
   ward: { type: String },
   authProvider: { type: String, enum: ['credentials', 'google'], default: 'credentials' },
-  membershipTier: { type: String, enum: ['silver', 'gold', 'platinum'], default: 'silver' },
+  membershipTier: { type: String, enum: ['silver', 'gold', 'platinum', 'elite'], default: 'silver' },
   rewardPoints: { type: Number, default: 0 },
   refillReminders: { type: Boolean, default: true },
   purchaseStreaks: { type: Number, default: 0 },
-  wishlist: [{ type: String }]
+  wishlist: [{ type: String }],
+  welcomeEmailSent: { type: Boolean, default: false }
 }, { timestamps: true });
 
 const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
+import AuditLog from '@/models/AuditLog';
+import EmailAutomation from '@/models/EmailAutomation';
 
 export async function POST(request: Request) {
   try {
@@ -45,6 +47,36 @@ export async function POST(request: Request) {
     });
 
     await newUser.save();
+
+    // Log the registration
+    try {
+      await AuditLog.create({
+        userId: newUser._id,
+        action: 'USER_REGISTRATION',
+        resource: 'User',
+        resourceId: newUser._id,
+        details: `Người dùng mới đăng ký tài khoản với email: ${email}`
+      });
+
+      await EmailAutomation.create({
+        userId: newUser._id,
+        triggerType: 'registration_welcome',
+        recipientEmail: email,
+        subject: 'Chào mừng bạn đến với HiAn - Nông Sản Cao Cấp',
+        status: 'pending'
+      });
+    } catch (logError) {
+      console.error("Error creating registration logs:", logError);
+    }
+
+    // Trigger AI Agent in background
+    fetch(`${process.env.NEXTAUTH_URL}/api/admin/agent/emails`, { 
+      method: 'POST',
+      headers: { 
+        'Cookie': request.headers.get('cookie') || '',
+        'x-internal-trigger': process.env.NEXTAUTH_SECRET || ''
+      } 
+    }).catch(e => console.error("Agent Trigger Error:", e));
 
     return NextResponse.json({ success: true, message: 'Tạo tài khoản thành công' }, { status: 201 });
   } catch (error) {

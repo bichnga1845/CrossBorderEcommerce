@@ -3,6 +3,9 @@ import dbConnect from '@/lib/mongodb';
 import Order from '@/models/Order';
 import Product from '@/models/Product';
 import { getServerSession } from 'next-auth/next';
+import User from '@/models/User';
+import AuditLog from '@/models/AuditLog';
+import EmailAutomation from '@/models/EmailAutomation';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { createMomoPaymentUrl } from '@/lib/momo';
 
@@ -109,6 +112,9 @@ export async function POST(request: Request) {
       });
     }
     
+    // Calculate points earned (1 point per 10,000 VND)
+    const pointsEarned = Math.floor(totalAmount / 10000);
+    
     // Create new order
     const order = new Order({
       userId: session.user.id,
@@ -116,10 +122,56 @@ export async function POST(request: Request) {
       items: orderItems,
       paymentMethod,
       totalAmount,
-      status: 'pending' // Can be updated by a webhook later
+      status: 'pending', // Can be updated by a webhook later
+      pointsEarned
     });
     
     await order.save();
+
+    // Update user points and tier
+    try {
+      const user = await User.findById(session.user.id);
+      if (user) {
+        user.rewardPoints = (user.rewardPoints || 0) + pointsEarned;
+        user.purchaseStreaks = (user.purchaseStreaks || 0) + 1;
+
+        // Update membership tier based on points
+        if (user.rewardPoints >= 10000) {
+          user.membershipTier = 'elite';
+        } else if (user.rewardPoints >= 5000) {
+          user.membershipTier = 'platinum';
+        } else if (user.rewardPoints >= 1000) {
+          user.membershipTier = 'gold';
+        }
+        
+        await user.save();
+      }
+    } catch (userUpdateError) {
+      console.error("Error updating user points:", userUpdateError);
+    }
+
+    // Log the purchase in AuditLog and EmailAutomation
+    try {
+      await AuditLog.create({
+        userId: session.user.id,
+        action: 'CREATE_ORDER',
+        resource: 'Order',
+        resourceId: order._id,
+        details: `Người dùng đã đặt đơn hàng mới với giá trị ${totalAmount} VNĐ. Nhận được ${pointsEarned} điểm.`
+      });
+
+      await EmailAutomation.create({
+        userId: session.user.id,
+        triggerType: 'order_confirmation',
+        recipientEmail: session.user.email,
+        subject: `Xác nhận đơn hàng HiAn #${order._id.toString().slice(-8).toUpperCase()}`,
+        content: `Cảm ơn bạn đã tin tưởng HiAn. Đơn hàng trị giá ${totalAmount.toLocaleString()} VNĐ của bạn đang được xử lý. Bạn đã tích lũy được ${pointsEarned} điểm từ đơn hàng này.`,
+        status: 'pending',
+        orderId: order._id
+      });
+    } catch (logError) {
+      console.error("Error creating logs:", logError);
+    }
 
     if (paymentMethod === 'momo') {
       try {

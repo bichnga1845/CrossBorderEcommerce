@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Search, ShoppingBag, Menu, X, User as UserIcon } from "lucide-react";
+import { Search, ShoppingBag, Menu, X, User as UserIcon, ShieldCheck } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { useSession } from "next-auth/react";
 
@@ -132,6 +132,15 @@ export default function Navbar() {
                 )}
                 {session?.user && <span className="text-xs font-bold hidden xl:block">{session.user.name?.split(' ').pop()}</span>}
               </Link>
+              {session?.user && (session.user as any).role === 'admin' && (
+                <Link
+                  href="/admin/dashboard"
+                  className="text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-2 px-3 py-1 bg-indigo-50 rounded-lg"
+                >
+                  <ShieldCheck size={16} />
+                  <span className="text-[10px] font-bold uppercase tracking-widest hidden xl:block">Admin</span>
+                </Link>
+              )}
               <Link
                 href="/cart"
                 className="text-forest-900 hover:text-champagne-dark transition-colors relative"

@@ -46,6 +46,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
     }
 
+    // Record Audit Log
+    try {
+      const AuditLog = (await import('@/models/AuditLog')).default;
+      await AuditLog.create({
+        userId: user._id,
+        action: 'UPDATE_PROFILE',
+        resource: 'User',
+        resourceId: user._id,
+        details: `Người dùng ${user.name} đã cập nhật thông tin cá nhân.`
+      });
+    } catch (logError) {
+      console.error("Log error:", logError);
+    }
+
     return NextResponse.json({ success: true, user });
   } catch (error) {
     console.error('Update profile error:', error);
